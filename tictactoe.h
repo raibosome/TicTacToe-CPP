@@ -2,169 +2,60 @@
 #include <stdlib.h>
 #include <string>
 
-using namespace std;
+/*
+    This is frowned upon by most c++ devs
+    Its okay to have a using namespace decl
+    but it is much safer to use it in a .cpp file
 
-const int NUM_PLAYERS = 2;
-const int LEN = 3;
-const char playerMark[] = {'*', 'x'};
+    Reason:
+    if I included this file [#include "tictactoe.h"]
+    and I had my own Chris::cout it will conflict with std::cout
+*/
+//using namespace std;
 
+/*
+    Global variables are bad, global variables in header files
+    are worse. This will cause linker errors (multiple definitions of 
+    same object) if you had >1 .cpp files including this file.
+
+    This is actually a pretty tough topic to explain over txt so read
+    these:
+        1) constexpr: https://stackoverflow.com/questions/51939692/c-extern-constant-int-for-array-size
+        2) extern: https://stackoverflow.com/questions/19929681/c-global-variable-declaration
+
+
+    But just fyi, this is still bad imo. Why not move these into the class
+    as variables? Make them const static so you can use them in your array
+    decl --> char grid[LEN][LEN];
+*/
+//const int NUM_PLAYERS = 2;
+//const int LEN = 3;
+//const char playerMark[] = {'*', 'x'};
+constexpr int NUM_PLAYERS = 2;
+constexpr int LEN = 3;
+extern const char playerMark[];
+
+
+//Excuse the formatting, my IDE does this automatically
 class TicTacToe
 {
-  private:
+//private:
+    ///* You could have done this instead*/
+    //static const int LEN;
+
+private:
     char grid[LEN][LEN];
     bool player;
-    string playerNames[NUM_PLAYERS], notifications;
+    //I frown on this
+    //Each line should only have 1 consistent type, since playerNames is array and notifications is not
+    std::string playerNames[NUM_PLAYERS], notifications;
+    //This is fine but some devs may not like this
     int plays, lastLocation;
-  public:
+
+public:
     TicTacToe();
     void playGame();
     void printGrid();
     void play(bool player_, int loc_);
     bool continueGame();
 };
-
-TicTacToe::TicTacToe()
-{
-    // Initialise grid
-    for (int i = 0; i < LEN; i++) {
-        for (int j = 0; j < LEN; j++) {
-            grid[i][j] = '0' + ((j + 1) + LEN * i);
-        }
-    }
-
-    // Initialise other variables
-    player = false;
-    notifications = "";
-    plays = 0;
-    char tmp[11];
-
-    // Welcome message
-    system("clear");
-    cout << "Welcome. The younger player starts first." << endl;
-
-    // First player
-    for (int i = 0; i < NUM_PLAYERS; i++) {
-        cout << "Enter Player " << i+1 << "'s name: ";
-        scanf("%10s", tmp);
-        playerNames[i] = tmp;
-        cout << "Hi " + playerNames[0] + ".\n" << endl;
-    }
-
-    // Wait until both players are ready
-    cout << "Press ENTER to start playing" << endl;
-    system("read");
-}
-
-void TicTacToe::playGame()
-{
-    // Play game for as long as nobody wins
-    do {
-        char tmp[2];
-
-        // Read inputsƒ
-        system("clear");
-        cout << notifications << endl;
-        cout << "[" << playerMark[0] << "] - " << playerNames[0] << endl;
-        cout << "[" << playerMark[1] << "] - " << playerNames[1] + "\n" << endl;
-
-        // Print grid
-        this->printGrid();
-
-        // Instructions and input
-        cout << playerNames[player] + "\'s turn. Select cell: ";
-        scanf("%1s", tmp);
-        lastLocation = tmp[0] - 48;
-
-        // Update arrays
-        this->play(player, lastLocation);
-
-    } while (continueGame() && plays < 9);
-
-    // Once game stops
-    if (plays == 9) {
-        // Nobody wins
-        system("clear");
-        this->printGrid();
-        cout << "Nobody won. Game ends. Bye!" << endl;
-    } else {
-        // Unswitch winner
-        player = !player;
-
-        // Output winning message
-        system("clear");
-        cout << "We have a winner." << endl;
-
-        // Print board
-        this->printGrid();
-
-        // Congratulate
-        cout << "Congrats " << playerNames[player] << "!" << endl;
-    }
-}
-
-void TicTacToe::printGrid()
-{
-    cout << "-------" << endl;
-    for (int i = 0; i < LEN; i++) {
-        for (int j = 0; j < LEN; j++) {
-            cout << "|" << grid[i][j];
-        }
-        cout << "|" << endl;
-    }
-    cout << "-------\n" << endl;
-}
-
-void TicTacToe::play(bool player_, int loc_)
-{
-    int i = (loc_-1) / LEN;
-    int j = ((loc_ % LEN) + 2) % LEN;
-    
-    // Check validity
-    if (!(loc_ >= 1 && loc_ <= 9)) {
-        notifications = "Choose any number between 1 to 9 inclusive\n";
-    } else if (grid[i][j] == 'o' || grid[i][j] == 'x') {
-        notifications = "That cell has already been marked!\n";
-    } else {
-        grid[i][j] = playerMark[player_];
-        notifications = "";
-        // Switch turn
-        player = !player;
-        ++plays;
-    }
-}
-
-bool TicTacToe::continueGame()
-{
-    int i = (lastLocation-1) / LEN;
-    int j = ((lastLocation % LEN) + 2) % LEN;
-    char c = grid[i][j];
-    int countHorizontal, countVertical, countDiagonalLR, countDiagonalRL;
-
-    countHorizontal = countVertical = countDiagonalLR = countDiagonalRL = 0;
-    for (int i = 0; i < LEN; i++) {   
-
-        // Diagonal counting
-        if (c == grid[i][i]) { countDiagonalLR++; }
-        if (c == grid[i][LEN-i-1]) { countDiagonalRL++; }
-        if (i == LEN-1) { 
-            if (countDiagonalRL == LEN || countDiagonalLR == LEN) {
-                ++plays;
-                return false;
-            }
-        }
-
-        // Horizontal and vertical counting
-        for (int j = 0; j < LEN; j++) {
-            if (c == grid[i][j]) { countHorizontal++; }
-            if (c == grid[j][i]) { countVertical++; }
-        }
-        if (countHorizontal == LEN || countVertical == LEN) {
-            ++plays;
-            return false;
-        } else {
-            countHorizontal = countVertical = 0;
-        }
-    }
-
-    return true;
-}

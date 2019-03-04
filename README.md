@@ -20,7 +20,7 @@ ali's turn. Select cell: 9
 Compile with
 
 ```bash
-g++ main.cpp -o tictactoe
+g++ -std=c++11 tictactoe.cpp main.cpp -o tictactoe
 ```
 
 and run 
