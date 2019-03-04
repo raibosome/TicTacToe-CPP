@@ -65,7 +65,7 @@ void TicTacToe::playGame()
     } while (continueGame() && plays < 9);
 
     // Once game stops
-    if (plays == 9) {
+    if (plays == 9 && continueGame()) {
         // Nobody wins
         system("clear");
         this->printGrid();
@@ -136,7 +136,7 @@ bool TicTacToe::continueGame()
         if (c == grid[i][LEN-i-1]) { countDiagonalRL++; }
         if (i == LEN-1) { 
             if (countDiagonalRL == LEN || countDiagonalLR == LEN) {
-                ++plays;
+                // ++plays;
                 return false;
             }
         }
@@ -147,7 +147,7 @@ bool TicTacToe::continueGame()
             if (c == grid[j][i]) { countVertical++; }
         }
         if (countHorizontal == LEN || countVertical == LEN) {
-            ++plays;
+            // ++plays;
             return false;
         } else {
             countHorizontal = countVertical = 0;
